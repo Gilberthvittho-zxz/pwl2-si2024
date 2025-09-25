@@ -36,20 +36,21 @@
                             @forelse ($products as $product)
                             <tr>
                                 {{-- Image --}}
-                                <td class="text-center">
-                                    @if ($product->image)
-                                        <img src="{{ asset('storage/images/' . $product->image) }}" 
-                                             class="rounded" style="width: 150px">
-                                    @else
-                                        <span class="text-muted">No Image</span>
-                                    @endif
-                                </td>
+<td class="text-center">
+    @if ($product->image)
+        <img src="{{ asset('storage/' . $product->image) }}" 
+             class="rounded" style="width: 150px">
+    @else
+        <span class="text-muted">No Image</span>
+    @endif
+</td>
+
 
                                 {{-- Title --}}
                                 <td>{{ $product->title }}</td>
 
                                 {{-- Supplier --}}
-                                <td>{{ $product->supplier_name ?? '-' }}</td>
+                                <td>{{ $product->nama_supplier ?? '-' }}</td>
 
                                 {{-- Category --}}
                                 <td>{{ $product->category_name ?? '-' }}</td>

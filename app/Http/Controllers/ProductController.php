@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-// import model Product
 use App\Models\Product;
-
-// import return type View
 use Illuminate\View\View;
 use Illuminate\Http\Request;
+use App\Models\Category_product;
+use App\Models\Supplier;
+use Illuminate\Http\RedirectResponse;
 
 class ProductController extends Controller
 {
@@ -16,10 +16,65 @@ class ProductController extends Controller
      *
      * @return View
      */
-  public function index()
+    public function index(): View
+    {
+        //get all products
+        $product = new Product;
+        $products = $product->get_product()->latest()->paginate(10);
+
+        //render view with products
+        return view('products.index', compact('products'));
+    }
+
+    /**
+     * create
+     *
+     * @return View
+     */
+    public function create(): View
 {
-    $products = Product::withCategorySupplier()->latest()->paginate(10);
-    return view('products.index', compact('products'));
+    $product = new Category_product;
+    $product2 = new Supplier;
+
+    $data['categories'] = $product->get_category_product()->get();
+    $data['nama_supplier'] = $product2->get_supplier()->get(); // ✅ harus sama
+
+    return view('products.create', compact('data'));
 }
 
+
+    /**
+     * store
+     *
+     * @param  Request $request
+     * @return RedirectResponse
+     */
+    public function store(Request $request): RedirectResponse
+    {
+        //validasi form
+        $validatedData = $request->validate([
+            'image'               => 'required|image|mimes:jpeg,jpg,png|max:2048',
+            'title'               => 'required|min:5',
+            'product_category_id' => 'required|integer',
+            'supplier_id'         => 'required|integer',
+            'description'         => 'required|string',
+            'harga'               => 'required|numeric',
+            'stock'               => 'required|numeric'
+        ]);
+
+        // upload file gambar
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $store_image = $image->store('images', 'public'); // Simpan gambar ke storage/app/public/images
+
+            // simpan ke DB
+            Product::storeProduct($request, $store_image);
+
+            // redirect success
+            return redirect()->route('products.index')->with(['success' => 'Data Berhasil Disimpan!']);
+        }
+
+        // redirect error
+        return redirect()->route('products.index')->with(['error' => 'Failed to upload image (request).']);
+    }
 }
